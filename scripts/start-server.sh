@@ -8,55 +8,42 @@ fi
 
 echo "---Update SteamCMD---"
 if [ "${USERNAME}" == "" ]; then
-    ${STEAMCMD_DIR}/steamcmd.sh \
-    +login anonymous \
-    +quit
+    ${STEAMCMD_DIR}/steamcmd.sh +login anonymous +quit
 else
-    ${STEAMCMD_DIR}/steamcmd.sh \
-    +login ${USERNAME} ${PASSWRD} \
-    +quit
+    ${STEAMCMD_DIR}/steamcmd.sh +login ${USERNAME} ${PASSWRD} +quit
 fi
 
 echo "---Update Server---"
 if [ "${USERNAME}" == "" ]; then
     if [ "${VALIDATE}" == "true" ]; then
-    	echo "---Validating installation---"
-        ${STEAMCMD_DIR}/steamcmd.sh \
-        +force_install_dir ${SERVER_DIR} \
-        +login anonymous \
-        +app_update ${GAME_ID} validate \
-        +quit
+        echo "---Validating installation---"
+        ${STEAMCMD_DIR}/steamcmd.sh +force_install_dir ${SERVER_DIR} +login anonymous +app_update ${GAME_ID} validate +quit
     else
-        ${STEAMCMD_DIR}/steamcmd.sh \
-        +force_install_dir ${SERVER_DIR} \
-        +login anonymous \
-        +app_update ${GAME_ID} \
-        +quit
+        ${STEAMCMD_DIR}/steamcmd.sh +force_install_dir ${SERVER_DIR} +login anonymous +app_update ${GAME_ID} +quit
     fi
 else
     if [ "${VALIDATE}" == "true" ]; then
-    	echo "---Validating installation---"
-        ${STEAMCMD_DIR}/steamcmd.sh \
-        +force_install_dir ${SERVER_DIR} \
-        +login ${USERNAME} ${PASSWRD} \
-        +app_update ${GAME_ID} validate \
-        +quit
+        echo "---Validating installation---"
+        ${STEAMCMD_DIR}/steamcmd.sh +force_install_dir ${SERVER_DIR} +login ${USERNAME} ${PASSWRD} +app_update ${GAME_ID} validate +quit
     else
-        ${STEAMCMD_DIR}/steamcmd.sh \
-        +force_install_dir ${SERVER_DIR} \
-        +login ${USERNAME} ${PASSWRD} \
-        +app_update ${GAME_ID} \
-        +quit
+        ${STEAMCMD_DIR}/steamcmd.sh +force_install_dir ${SERVER_DIR} +login ${USERNAME} ${PASSWRD} +app_update ${GAME_ID} +quit
     fi
 fi
 
+echo "---Download Mods---"
+MODS=(${MODS//;/ }) # Split the MODS env variable by semicolons into an array
+for MOD in "${MODS[@]}"; do
+    echo "Downloading mod $MOD..."
+    ${STEAMCMD_DIR}/steamcmd.sh +login anonymous +force_install_dir ${SERVER_DIR} +workshop_download_item 221100 $MOD +quit
+done
+
 echo "---Prepare Server---"
 if [ ! -f ${DATA_DIR}/.steam/sdk32/steamclient.so ]; then
-	if [ ! -d ${DATA_DIR}/.steam ]; then
-    	mkdir ${DATA_DIR}/.steam
+    if [ ! -d ${DATA_DIR}/.steam ]; then
+        mkdir ${DATA_DIR}/.steam
     fi
-	if [ ! -d ${DATA_DIR}/.steam/sdk32 ]; then
-    	mkdir ${DATA_DIR}/.steam/sdk32
+    if [ ! -d ${DATA_DIR}/.steam/sdk32 ]; then
+        mkdir ${DATA_DIR}/.steam/sdk32
     fi
     cp -R ${STEAMCMD_DIR}/linux32/* ${DATA_DIR}/.steam/sdk32/
 fi
@@ -64,5 +51,6 @@ chmod -R ${DATA_PERM} ${DATA_DIR}
 echo "---Server ready---"
 
 echo "---Start Server---"
+MOD_LIST=$(echo ${MODS} | sed 's/ /;/g') # Join mods into a semicolon-separated list
 cd ${SERVER_DIR}
-${SERVER_DIR}/srcds_run -game ${GAME_NAME} ${GAME_PARAMS} -console +port ${GAME_PORT}
+${SERVER_DIR}/srcds_run -game ${GAME_NAME} ${GAME_PARAMS} -console +port ${GAME_PORT} -mod=@${MOD_LIST}
