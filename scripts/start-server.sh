@@ -17,9 +17,9 @@ echo "---Update Server---"
 if [ "${USERNAME}" == "" ]; then
     if [ "${VALIDATE}" == "true" ]; then
         echo "---Validating installation---"
-        ${STEAMCMD_DIR}/steamcmd.sh +force_install_dir ${SERVER_DIR} +login anonymous +app_update ${GAME_ID} validate +quit
+        ${STEAMCMD_DIR}/steamcmd.sh +force_install_dir ${SERVER_DIR} +login ${USERNAME} ${PASSWRD} +app_update ${GAME_ID} validate +quit
     else
-        ${STEAMCMD_DIR}/steamcmd.sh +force_install_dir ${SERVER_DIR} +login anonymous +app_update ${GAME_ID} +quit
+        ${STEAMCMD_DIR}/steamcmd.sh +force_install_dir ${SERVER_DIR} +login ${USERNAME} ${PASSWRD} +app_update ${GAME_ID} +quit
     fi
 else
     if [ "${VALIDATE}" == "true" ]; then
@@ -34,7 +34,7 @@ echo "---Download Mods---"
 MODS=(${MODS//;/ }) # Split the MODS env variable by semicolons into an array
 for MOD in "${MODS[@]}"; do
     echo "Downloading mod $MOD..."
-    ${STEAMCMD_DIR}/steamcmd.sh +login anonymous +force_install_dir ${SERVER_DIR} +workshop_download_item 221100 $MOD +quit
+    ${STEAMCMD_DIR}/steamcmd.sh +force_install_dir ${SERVER_DIR} +login ${USERNAME} ${PASSWRD} +workshop_download_item ${GAME_ID} $MOD +quit
 done
 
 echo "---Prepare Server---"
@@ -53,4 +53,4 @@ echo "---Server ready---"
 echo "---Start Server---"
 MOD_LIST=$(echo ${MODS} | sed 's/ /;/g') # Join mods into a semicolon-separated list
 cd ${SERVER_DIR}
-${SERVER_DIR}/srcds_run -game ${GAME_NAME} ${GAME_PARAMS} -console +port ${GAME_PORT} -mod=@${MOD_LIST}
+${SERVER_DIR}/srcds_run -game ${GAME_NAME} ${GAME_PARAMS} -console +port ${GAME_PORT} -mod=${MOD_LIST}
