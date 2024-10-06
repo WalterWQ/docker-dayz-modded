@@ -32,7 +32,7 @@ fi
 
 echo "---Download Mods---"
 MOD_CMDS=""
-MODS=("1559212036" "1564026768") # Example mods
+MODS=$MODS # Example mods
 for MOD in "${MODS[@]}"; do
     MOD_CMDS+="+workshop_download_item ${GAME_ID} $MOD "
 done
