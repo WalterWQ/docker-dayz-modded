@@ -31,14 +31,17 @@ else
 fi
 
 echo "---Download Mods---"
-MOD_CMDS=""
-MODS=$MODS # Example mods
-for MOD in "${MODS[@]}"; do
-    MOD_CMDS+="+workshop_download_item ${GAME_ID} $MOD "
-done
-
-# Run SteamCMD once to download all mods
-${STEAMCMD_DIR}/steamcmd.sh +force_install_dir ${SERVER_DIR} +login ${USERNAME} ${PASSWRD} ${MOD_CMDS} +quit
+if [ -z "${MODS}" ]; then
+    echo "No mods specified. Skipping mod download."
+else
+    MOD_CMDS=""
+    MODS=$MODS # Example mods
+    for MOD in "${MODS[@]}"; do
+        MOD_CMDS+="+workshop_download_item ${GAME_ID} $MOD "
+    done
+    # Run SteamCMD once to download all mods
+    ${STEAMCMD_DIR}/steamcmd.sh +force_install_dir ${SERVER_DIR} +login ${USERNAME} ${PASSWRD} ${MOD_CMDS} +quit
+fi
 
 
 echo "---Prepare Server---"
@@ -55,6 +58,12 @@ chmod -R ${DATA_PERM} ${DATA_DIR}
 echo "---Server ready---"
 
 echo "---Start Server---"
-MOD_LIST=$(echo ${MODS} | sed 's/ /;/g') # Join mods into a semicolon-separated list
-cd ${SERVER_DIR}
-${SERVER_DIR}/srcds_run -game ${GAME_NAME} ${GAME_PARAMS} -console +port ${GAME_PORT} -mod=${MOD_LIST}
+if [ -z "${MODS}" ]; then
+    echo "No mods specified. Starting server without mods."
+    cd ${SERVER_DIR}
+    ${SERVER_DIR}/srcds_run -game ${GAME_NAME} ${GAME_PARAMS} -console +port ${GAME_PORT}
+else
+    MOD_LIST=$(echo ${MODS} | sed 's/ /;/g') # Join mods into a semicolon-separated list
+    cd ${SERVER_DIR}
+    ${SERVER_DIR}/srcds_run -game ${GAME_NAME} ${GAME_PARAMS} -console +port ${GAME_PORT} -mod=${MOD_LIST}
+fi
