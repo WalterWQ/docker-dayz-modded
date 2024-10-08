@@ -31,18 +31,18 @@ else
 fi
 
 echo "---Download Mods---"
+# Check if MODS is not empty (from the environment)
 if [ -z "${MODS}" ]; then
     echo "No mods specified. Skipping mod download."
 else
     MOD_CMDS=""
-    MODS=$MODS # Example mods
-    for MOD in "${MODS[@]}"; do
+    MODS_ARRAY=(${MODS//;/ }) # Split MODS env variable by semicolons into an array
+    for MOD in "${MODS_ARRAY[@]}"; do
         MOD_CMDS+="+workshop_download_item ${GAME_ID} $MOD "
     done
     # Run SteamCMD once to download all mods
     ${STEAMCMD_DIR}/steamcmd.sh +force_install_dir ${SERVER_DIR} +login ${USERNAME} ${PASSWRD} ${MOD_CMDS} +quit
 fi
-
 
 echo "---Prepare Server---"
 if [ ! -f ${DATA_DIR}/.steam/sdk32/steamclient.so ]; then
