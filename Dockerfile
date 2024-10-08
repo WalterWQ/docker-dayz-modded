@@ -1,37 +1,61 @@
-FROM ich777/debian-baseimage:bullseye_amd64
+FROM steamcmd/steamcmd:ubuntu-18
+# steamcmd doesnt work properly on ubuntu 20 due to misssing 32 bit deps
 
-LABEL org.opencontainers.image.authors="admin@minenet.at"
-LABEL org.opencontainers.image.source="https://github.com/ich777/docker-steamcmd-server"
+ENV DEBIAN_FRONTEND=noninteractive
 
-RUN dpkg --add-architecture i386 && \
-    apt-get update && \
-    apt-get install -y --no-install-recommends lib32gcc-s1 lib32stdc++6 lib32z1 libcap2 libcap2-bin libc6:i386 && \
+# install deps
+RUN apt-get update && \
+    apt-get upgrade -y && \
+    apt-get install -y apt-utils && \
+    apt-get install -y \
+        lib32gcc1 \
+        libcap-dev \
+        libcurl4 \
+        libcurl4-openssl-dev \
+    && \
+    apt-get autoremove && \
     rm -rf /var/lib/apt/lists/*
 
-ENV DATA_DIR="/serverdata"
-ENV STEAMCMD_DIR="${DATA_DIR}/steamcmd"
-ENV SERVER_DIR="${DATA_DIR}/serverfiles"
-ENV GAME_ID="template"
-ENV GAME_NAME="template"
-ENV GAME_PARAMS="template"
-ENV GAME_PORT=2302
-ENV VALIDATE=""
-ENV UMASK=000
-ENV UID=99
-ENV GID=100
-ENV USERNAME=""
-ENV PASSWRD=""
-ENV MODS=""
-ENV USER="steam"
-ENV DATA_PERM=770
+# steam cmd and directory conf
+ENV USER dayz
+ENV BASE_DIR /dayz
+ENV HOME ${BASE_DIR}/home
+ENV SERVER_DIR ${BASE_DIR}/server
+ENV STEAM_CMD_USER anonymous
+ENV STEAM_CMD_PASSWORD=""
 
-RUN mkdir -p $DATA_DIR $STEAMCMD_DIR $SERVER_DIR && \
-    useradd -d $DATA_DIR -s /bin/bash $USER && \
-    chown -R $USER $DATA_DIR && \
-    ulimit -n 2048
+# base dirs
+RUN mkdir -p ${BASE_DIR} && \
+    groupadd dayz && \    
+    useradd -m -d ${HOME} -s /bin/bash -g dayz dayz && \
+    mkdir -p ${SERVER_DIR}
 
-ADD /scripts/ /opt/scripts/
-RUN chmod -R 770 /opt/scripts/
+# permissions
+RUN chown -R dayz:dayz ${BASE_DIR} && \
+    chown -R :dayz /usr/bin/steamcmd
 
-# Set entrypoint
-ENTRYPOINT ["/opt/scripts/start.sh"]
+# game
+EXPOSE 2302/udp
+EXPOSE 2303/udp
+EXPOSE 2304/udp
+EXPOSE 2305/udp
+# steam
+EXPOSE 8766/udp
+EXPOSE 27016/udp
+# rcon (preferred)
+EXPOSE 2310
+
+WORKDIR ${BASE_DIR}
+VOLUME ${BASE_DIR}
+USER dayz
+
+# update steamcmd & validate user permissions
+RUN steamcmd +quit
+
+# currently linux server is experimental only
+ENV APP_ID="223350"
+
+# reset cmd & define entrypoint
+CMD [ "start" ]
+COPY entrypoint.sh /dayz/entrypoint.sh
+ENTRYPOINT [ "/dayz/entrypoint.sh" ]
