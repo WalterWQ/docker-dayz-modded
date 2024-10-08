@@ -1,4 +1,22 @@
 #!/bin/bash
+
+function startGameWithMods() {
+    cd ${SERVER_DIR}
+    ./DayZServer \
+        -config="serverDZ.cfg" \
+        -mod=${MOD_LIST} \
+        -BEpath=battleye \
+        -profiles=profiles
+}
+
+function startGame() {
+    cd ${SERVER_DIR}
+    ./DayZServer \
+        -config="serverDZ.cfg" \
+        -BEpath=battleye \
+        -profiles=profiles
+}
+
 if [ ! -f ${STEAMCMD_DIR}/steamcmd.sh ]; then
     echo "SteamCMD not found!"
     wget -q -O ${STEAMCMD_DIR}/steamcmd_linux.tar.gz http://media.steampowered.com/client/steamcmd_linux.tar.gz 
@@ -59,11 +77,7 @@ echo "---Server ready---"
 
 echo "---Start Server---"
 if [ -z "${MODS}" ]; then
-    echo "No mods specified. Starting server without mods."
-    cd ${SERVER_DIR}
-    ${SERVER_DIR}/srcds_run -game ${GAME_NAME} ${GAME_PARAMS} -console +port ${GAME_PORT}
+    startGameWithMods
 else
-    MOD_LIST=$(echo ${MODS} | sed 's/ /;/g') # Join mods into a semicolon-separated list
-    cd ${SERVER_DIR}
-    ${SERVER_DIR}/srcds_run -game ${GAME_NAME} ${GAME_PARAMS} -console +port ${GAME_PORT} -mod=${MOD_LIST}
+    startGame
 fi
