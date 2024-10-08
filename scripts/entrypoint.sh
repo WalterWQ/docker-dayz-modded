@@ -14,16 +14,3 @@ function startGame() {
     ./DayZServer \
         -config="serverDZ.cfg" 
 }
-
-case "$1" in
-    start)
-        updateGame
-        startGame
-    ;;
-    update)
-        updateGame
-    ;;
-    *)
-        exec "$@"
-    ;;
-esac
