@@ -19,6 +19,13 @@ RUN apt-get update && \
 # steam cmd and directory conf
 ENV USER dayz
 ENV BASE_DIR /dayz
+ENV UMASK=000
+ENV UID=99
+ENV GID=100
+ENV USERNAME=""
+ENV PASSWRD=""
+ENV USER="steam"
+ENV DATA_PERM=770
 ENV HOME ${BASE_DIR}/home
 ENV SERVER_DIR ${BASE_DIR}/server
 ENV STEAM_CMD_USER anonymous
@@ -57,5 +64,4 @@ ENV APP_ID="1042420"
 
 # reset cmd & define entrypoint
 CMD [ "start" ]
-COPY entrypoint.sh /dayz/entrypoint.sh
-ENTRYPOINT [ "/dayz/entrypoint.sh" ]
+ENTRYPOINT [ "/scripts/start.sh" ]
