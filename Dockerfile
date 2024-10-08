@@ -36,5 +36,4 @@ RUN chmod -R 770 /opt/scripts/
 
 # reset cmd & define entrypoint
 CMD [ "start" ]
-COPY /opt/scripts/entrypoint.sh /dayz/entrypoint.sh
 ENTRYPOINT ["/opt/scripts/entrypoint.sh"]
