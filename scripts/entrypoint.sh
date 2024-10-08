@@ -1,9 +1,31 @@
 #!/bin/bash
 
-# Prepare and start the DayZ server
-echo "---Starting DayZ Server---"
-cd ${SERVER_DIR}
-./DayZServer \
--config="serverDZ.cfg"
 
-echo "---Server Started---"
+function updateGame() {
+    steamcmd \
+        +login ${STEAM_CMD_USER} ${STEAM_CMD_PASSWORD} \
+        +force_install_dir ${SERVER_DIR} \
+        +app_update ${APP_ID} \
+        ${EXTRA_UPDATE_ARGS} \
+        +quit
+}
+
+function startGame() {
+    cd ${SERVER_DIR}
+    ./DayZServer \
+        -config="serverDZ.cfg" \
+        ${EXTRA_START_ARGS}
+}
+
+case "$1" in
+    start)
+        updateGame
+        startGame
+    ;;
+    update)
+        updateGame
+    ;;
+    *)
+        exec "$@"
+    ;;
+esac
