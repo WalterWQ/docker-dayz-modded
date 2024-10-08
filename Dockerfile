@@ -31,15 +31,11 @@ ENV SERVER_DIR ${BASE_DIR}/server
 ENV STEAM_CMD_USER anonymous
 ENV STEAM_CMD_PASSWORD=""
 
-# base dirs
-RUN mkdir -p ${BASE_DIR} && \
-    groupadd dayz && \    
-    useradd -m -d ${HOME} -s /bin/bash -g dayz dayz && \
-    mkdir -p ${SERVER_DIR}
-
-# permissions
-RUN chown -R dayz:dayz ${BASE_DIR} && \
-    chown -R :dayz /usr/bin/steamcmd
+RUN mkdir $STEAMCMD_DIR && \
+	mkdir $SERVER_DIR && \
+	useradd -d ${HOME} -s /bin/bash $USER && \
+	chown -R $USER ${BASE_DIR} && \
+	ulimit -n 2048
 
 # game
 EXPOSE 2302/udp
@@ -54,14 +50,12 @@ EXPOSE 2310
 
 WORKDIR ${BASE_DIR}
 VOLUME ${BASE_DIR}
-USER dayz
-
-# update steamcmd & validate user permissions
-RUN steamcmd +quit
 
 # currently linux server is experimental only
 ENV APP_ID="1042420"
 
-# reset cmd & define entrypoint
-CMD [ "start" ]
-ENTRYPOINT [ "/scripts/start.sh" ]
+ADD /scripts/ /opt/scripts/
+RUN chmod -R 770 /opt/scripts/
+
+#Server Start
+ENTRYPOINT ["/opt/scripts/start.sh"]
