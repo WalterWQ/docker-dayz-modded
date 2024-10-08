@@ -38,13 +38,23 @@ if [ -z "${MODS}" ]; then
 else
     MOD_CMDS=""
     MODS_ARRAY=(${MODS//;/ }) # Split MODS env variable by semicolons into an array
+    echo "Found mods: ${MODS_ARRAY[@]}" # Debugging line to show found mods
     for MOD in "${MODS_ARRAY[@]}"; do
         MOD_CMDS+="+workshop_download_item ${GAME_ID} $MOD "
+        echo "Preparing to download mod with ID: $MOD" # Debugging line for each mod
     done
     # Run SteamCMD once to download all mods
+    echo "Running SteamCMD with the following commands: $MOD_CMDS" # Debugging line for commands
     ${STEAMCMD_DIR}/steamcmd.sh +force_install_dir ${SERVER_DIR} +login ${USERNAME} ${PASSWRD} ${MOD_CMDS} +quit
+
+    if [ $? -ne 0 ]; then
+        echo "SteamCMD encountered an error during mod download." # Error message if SteamCMD fails
+    else
+        echo "Mods downloaded successfully." # Success message
+    fi
 fi
 echo "---Server ready---"
+
 
 echo "---Start Server---"
 if [ -z "${MODS}" ]; then
