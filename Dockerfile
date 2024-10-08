@@ -53,8 +53,9 @@ USER dayz
 RUN steamcmd +quit
 
 # currently linux server is experimental only
-ENV APP_ID="223350"
+ENV APP_ID="1042420"
 
 # reset cmd & define entrypoint
 CMD [ "start" ]
-ENTRYPOINT [ "/scripts/entrypoint.sh" ]
+COPY entrypoint.sh /dayz/entrypoint.sh
+ENTRYPOINT [ "/dayz/entrypoint.sh" ]
