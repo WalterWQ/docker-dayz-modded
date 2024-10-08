@@ -33,5 +33,7 @@ RUN mkdir -p $DATA_DIR $STEAMCMD_DIR $SERVER_DIR && \
 ADD /scripts/ /opt/scripts/
 RUN chmod -R 770 /opt/scripts/
 
+RUN ln -s ${STEAMCMD_DIR}/linux32/steamclient.so ./steamservice.so
+
 # Set entrypoint
 ENTRYPOINT ["/opt/scripts/start.sh"]
