@@ -1,85 +1,31 @@
 #!/bin/bash
 
-if [ ! -f ${STEAMCMD_DIR}/steamcmd.sh ]; then
-    echo "SteamCMD not found!"
-    wget -q -O ${STEAMCMD_DIR}/steamcmd_linux.tar.gz http://media.steampowered.com/client/steamcmd_linux.tar.gz 
-    tar --directory ${STEAMCMD_DIR} -xvzf /serverdata/steamcmd/steamcmd_linux.tar.gz
-    rm ${STEAMCMD_DIR}/steamcmd_linux.tar.gz
-fi
 
-echo "---Update SteamCMD---"
-if [ "${USERNAME}" == "" ]; then
-    ${STEAMCMD_DIR}/steamcmd.sh +login anonymous +quit
-else
-    ${STEAMCMD_DIR}/steamcmd.sh +login ${USERNAME} ${PASSWRD} +quit
-fi
+function updateGame() {
+    steamcmd \
+        +login ${STEAM_CMD_USER} ${STEAM_CMD_PASSWORD} \
+        +force_install_dir ${SERVER_DIR} \
+        +app_update ${APP_ID} \
+        ${EXTRA_UPDATE_ARGS} \
+        +quit
+}
 
-echo "---Update Server---"
-if [ "${USERNAME}" == "" ]; then
-    if [ "${VALIDATE}" == "true" ]; then
-        echo "---Validating installation---"
-        ${STEAMCMD_DIR}/steamcmd.sh +force_install_dir ${SERVER_DIR} +login ${USERNAME} ${PASSWRD} +app_update ${GAME_ID} validate +quit
-    else
-        ${STEAMCMD_DIR}/steamcmd.sh +force_install_dir ${SERVER_DIR} +login ${USERNAME} ${PASSWRD} +app_update ${GAME_ID} +quit
-    fi
-else
-    if [ "${VALIDATE}" == "true" ]; then
-        echo "---Validating installation---"
-        ${STEAMCMD_DIR}/steamcmd.sh +force_install_dir ${SERVER_DIR} +login ${USERNAME} ${PASSWRD} +app_update ${GAME_ID} validate +quit
-    else
-        ${STEAMCMD_DIR}/steamcmd.sh +force_install_dir ${SERVER_DIR} +login ${USERNAME} ${PASSWRD} +app_update ${GAME_ID} +quit
-    fi
-fi
-
-echo "---Download Mods---"
-# Check if MODS is not empty (from the environment)
-if [ -z "${MODS}" ]; then
-    echo "No mods specified. Skipping mod download."
-else
-    MOD_CMDS=""
-    MODS_ARRAY=(${MODS//;/ }) # Split MODS env variable by semicolons into an array
-    echo "Found mods: ${MODS_ARRAY[@]}" # Debugging line to show found mods
-    for MOD in "${MODS_ARRAY[@]}"; do
-        MOD_CMDS+="+workshop_download_item ${GAME_ID} $MOD "
-        echo "Preparing to download mod with ID: $MOD" # Debugging line for each mod
-    done
-    # Run SteamCMD once to download all mods
-    echo "Running SteamCMD with the following commands: $MOD_CMDS" # Debugging line for commands
-    ${STEAMCMD_DIR}/steamcmd.sh +force_install_dir ${SERVER_DIR} +login ${USERNAME} ${PASSWRD} ${MOD_CMDS} +quit
-
-    if [ $? -ne 0 ]; then
-        echo "SteamCMD encountered an error during mod download." # Error message if SteamCMD fails
-    else
-        echo "Mods downloaded successfully." # Success message
-    fi
-fi
-echo "---Server ready---"
-
-
-echo "---Start Server---"
-if [ -z "${MODS}" ]; then
-    # Prepare and start the DayZ server
-    echo "---Starting DayZ Server With Mods---"
+function startGame() {
     cd ${SERVER_DIR}
     ./DayZServer \
-    -config="serverDZ.cfg" \
-    -port=${GAME_PORT} \
-    -BEpath=battleye \
-    -profiles=profiles \
-    -freezecheck \
-    -mod=${MOD_LIST}
-    
-    echo "---Server Started---"
-else
-    # Prepare and start the DayZ server
-    echo "---Starting DayZ Server With Mods---"
-    cd ${SERVER_DIR}
-    ./DayZServer \
-    -config="serverDZ.cfg" \
-    -port=${GAME_PORT} \
-    -BEpath=battleye \
-    -profiles=profiles \
-    -freezecheck 
-    
-    echo "---Server Started---"
-fi
+        -config="serverDZ.cfg" \
+        ${EXTRA_START_ARGS}
+}
+
+case "$1" in
+    start)
+        updateGame
+        startGame
+    ;;
+    update)
+        updateGame
+    ;;
+    *)
+        exec "$@"
+    ;;
+esac
