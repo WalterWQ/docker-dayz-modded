@@ -34,5 +34,7 @@ RUN mkdir $DATA_DIR && \
 ADD /scripts/ /opt/scripts/
 RUN chmod -R 770 /opt/scripts/
 
-#Server Start
-ENTRYPOINT ["/opt/scripts/start.sh"]
+# reset cmd & define entrypoint
+CMD [ "start" ]
+COPY /opt/scripts/entrypoint.sh /dayz/entrypoint.sh
+ENTRYPOINT ["/opt/scripts/entrypoint.sh"]
