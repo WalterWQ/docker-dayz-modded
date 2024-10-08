@@ -57,5 +57,5 @@ ENV APP_ID="223350"
 
 # reset cmd & define entrypoint
 CMD [ "start" ]
-COPY entrypoint.sh /dayz/entrypoint.sh
+COPY scripts/entrypoint.sh /dayz/entrypoint.sh
 ENTRYPOINT [ "/dayz/entrypoint.sh" ]
