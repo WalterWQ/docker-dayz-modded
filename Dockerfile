@@ -4,8 +4,8 @@ LABEL org.opencontainers.image.authors="admin@minenet.at"
 LABEL org.opencontainers.image.source="https://github.com/ich777/docker-steamcmd-server"
 
 RUN apt-get update && \
-	apt-get -y install --no-install-recommends lib32gcc-s1 lib32stdc++6 lib32z1 && \
-	rm -rf /var/lib/apt/lists/*
+    apt-get -y install --no-install-recommends lib32gcc-s1 lib32stdc++6 lib32z1 && \
+    rm -rf /var/lib/apt/lists/*
 
 ENV DATA_DIR="/serverdata"
 ENV STEAMCMD_DIR="${DATA_DIR}/steamcmd"
@@ -24,16 +24,13 @@ ENV MODS=""
 ENV USER="steam"
 ENV DATA_PERM=770
 
-RUN mkdir $DATA_DIR && \
-	mkdir $STEAMCMD_DIR && \
-	mkdir $SERVER_DIR && \
-	useradd -d $DATA_DIR -s /bin/bash $USER && \
-	chown -R $USER $DATA_DIR && \
-	ulimit -n 2048
+RUN mkdir -p $DATA_DIR $STEAMCMD_DIR $SERVER_DIR && \
+    useradd -d $DATA_DIR -s /bin/bash $USER && \
+    chown -R $USER $DATA_DIR && \
+    ulimit -n 2048
 
 ADD /scripts/ /opt/scripts/
 RUN chmod -R 770 /opt/scripts/
 
-# reset cmd & define entrypoint
-CMD [ "start" ]
+# Set entrypoint
 ENTRYPOINT ["/opt/scripts/entrypoint.sh"]
